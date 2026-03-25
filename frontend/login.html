@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K8s App — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: #1e293b;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    nav .logo { font-size: 1.4rem; font-weight: 700; color: #38bdf8; }
+    nav a { color: #94a3b8; text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: #38bdf8; }
+
+    .container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.75rem;
+      cursor: pointer;
+      color: #64748b;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+
+    .form { display: none; }
+    .form.active { display: block; }
+
+    .form h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.4rem;
+      color: #f8fafc;
+    }
+
+    .form p {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #38bdf8; }
+
+    .btn {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.8rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: #7dd3fc; }
+    .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    .message {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .message.error   { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .message.success { background: #052e16; color: #86efac; border: 1px solid #14532d; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">⚙️ K8s App</div>
+    <div>
+      <a href="index.html">Home</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">Login</div>
+        <div class="tab"       onclick="switchTab('register')">Register</div>
+      </div>
+
+      <!-- Login Form -->
+      <div class="form active" id="form-login">
+        <h2>Welcome back</h2>
+        <p>Login to access your dashboard</p>
+
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="your username"/>
+
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••"/>
+
+        <button class="btn" onclick="handleLogin()">Login</button>
+        <div class="message" id="login-msg"></div>
+      </div>
+
+      <!-- Register Form -->
+      <div class="form" id="form-register">
+        <h2>Create account</h2>
+        <p>Register to get started</p>
+
+        <label>Username</label>
+        <input type="text" id="reg-username" placeholder="choose a username"/>
+
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com"/>
+
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="min 6 characters"/>
+
+        <button class="btn" onclick="handleRegister()">Create Account</button>
+        <div class="message" id="register-msg"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      document.getElementById('form-' + tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'message ' + type;
+      el.style.display = 'block';
+    }
+
+    async function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!username || !password) {
+        return showMsg('login-msg', 'Please fill in all fields.', 'error');
+      }
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('username', data.username);
+          showMsg('login-msg', 'Login successful! Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        } else {
+          showMsg('login-msg', data.message || 'Login failed.', 'error');
+        }
+      } catch (err) {
+        showMsg('login-msg', 'Could not reach server.', 'error');
+      }
+    }
+
+    async function handleRegister() {
+      const username = document.getElementById('reg-username').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!username || !email || !password) {
+        return showMsg('register-msg', 'Please fill in all fields.', 'error');
+      }
+      if (password.length < 6) {
+        return showMsg('register-msg', 'Password must be at least 6 characters.', 'error');
+      }
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showMsg('register-msg', 'Account created! Switching to login...', 'success');
+          setTimeout(() => switchTab('login'), 1500);
+        } else {
+          showMsg('register-msg', data.message || 'Registration failed.', 'error');
+        }
+      } catch (err) {
+        showMsg('register-msg', 'Could not reach server.', 'error');
+      }
+    }
+  </script>
+
+</body>
+</html>

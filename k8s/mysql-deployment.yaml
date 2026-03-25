@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    app: mysql
+spec:
+  replicas: 1          # never run more than 1 MySQL replica with ReadWriteOnce PVC
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate     # Recreate instead of RollingUpdate — avoids two pods fighting over PVC
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: root-password
+            - name: MYSQL_DATABASE
+              value: k8sapp
+            - name: MYSQL_USER
+              value: appuser
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: app-password
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 20
+            periodSeconds: 5
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

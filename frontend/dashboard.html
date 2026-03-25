@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K8s App — Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #1e293b;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    nav .logo { font-size: 1.4rem; font-weight: 700; color: #38bdf8; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-right span { color: #94a3b8; font-size: 0.9rem; }
+    .nav-right span b { color: #38bdf8; }
+
+    .btn-logout {
+      padding: 0.4rem 1rem;
+      background: transparent;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
+
+    .main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .welcome {
+      margin-bottom: 2.5rem;
+    }
+
+    .welcome h1 { font-size: 2rem; color: #f8fafc; }
+    .welcome h1 span { color: #38bdf8; }
+    .welcome p { color: #64748b; margin-top: 0.4rem; }
+
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .stat-card .sub {
+      font-size: 0.8rem;
+      color: #475569;
+      margin-top: 0.3rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .info-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #0f172a;
+      font-size: 0.9rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-row .key   { color: #64748b; }
+    .info-row .val   { color: #e2e8f0; font-weight: 500; }
+    .info-row .badge {
+      background: #052e16;
+      color: #86efac;
+      border: 1px solid #14532d;
+      padding: 0.1rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+    }
+
+    #loading {
+      text-align: center;
+      padding: 4rem;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">⚙️ K8s App</div>
+    <div class="nav-right">
+      <span>Logged in as <b id="nav-username">...</b></span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main" id="loading">
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div class="main" id="dashboard" style="display:none">
+
+    <div class="welcome">
+      <h1>Hello, <span id="dash-username">...</span> 👋</h1>
+      <p>Welcome to your dashboard. Here's your account overview.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">Account Status</div>
+        <div class="value">Active</div>
+        <div class="sub">All systems running</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Member Since</div>
+        <div class="value" id="stat-date">—</div>
+        <div class="sub">Registration date</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Cluster</div>
+        <div class="value">K8s</div>
+        <div class="sub">Azure VM · 2 nodes</div>
+      </div>
+    </div>
+
+    <p class="section-title">Account Details</p>
+    <div class="info-card">
+      <div class="info-row">
+        <span class="key">Username</span>
+        <span class="val" id="info-username">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Email</span>
+        <span class="val" id="info-email">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">User ID</span>
+        <span class="val" id="info-id">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Status</span>
+        <span class="val"><span class="badge">✓ Verified</span></span>
+      </div>
+    </div>
+
+    <p class="section-title">Infrastructure</p>
+    <div class="info-card">
+      <div class="info-row">
+        <span class="key">Frontend</span>
+        <span class="val">nginx · Docker · Kubernetes Deployment</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Backend</span>
+        <span class="val">Node.js Express · REST API</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Database</span>
+        <span class="val">MySQL · PersistentVolumeClaim</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Ingress</span>
+        <span class="val">nginx-ingress-controller · NodePort</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const token    = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('nav-username').textContent = username || '...';
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        const user = await res.json();
+
+        document.getElementById('dash-username').textContent  = user.username;
+        document.getElementById('info-username').textContent  = user.username;
+        document.getElementById('info-email').textContent     = user.email;
+        document.getElementById('info-id').textContent        = '#' + user.id;
+        document.getElementById('stat-date').textContent      =
+          new Date(user.created_at).toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'short', year: 'numeric'
+          });
+
+        document.getElementById('loading').style.display   = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('loading').innerHTML =
+          '<p style="color:#ef4444">Could not load dashboard. Is the backend running?</p>';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      window.location.href = 'index.html';
+    }
+
+    loadDashboard();
+  </script>
+
+</body>
+</html>

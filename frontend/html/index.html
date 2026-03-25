@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K8s App — Home</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #1e293b;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    nav .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    nav .nav-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    nav .nav-links a:hover { color: #38bdf8; }
+
+    /* shown only when logged in */
+    #nav-dashboard { display: none; }
+    #nav-logout    { display: none; }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 span { color: #38bdf8; }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: #94a3b8;
+      max-width: 560px;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .btn-primary:hover { background: #7dd3fc; }
+
+    .btn-outline {
+      background: transparent;
+      color: #38bdf8;
+      border: 2px solid #38bdf8;
+      margin-left: 1rem;
+    }
+
+    .btn-outline:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .cards {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 280px;
+      text-align: center;
+    }
+
+    .card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .card h3 { color: #f1f5f9; margin-bottom: 0.5rem; }
+    .card p  { color: #64748b; font-size: 0.9rem; line-height: 1.6; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #475569;
+      font-size: 0.85rem;
+      border-top: 1px solid #1e293b;
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">⚙️ K8s App</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html" id="nav-login">Login</a>
+      <a href="dashboard.html" id="nav-dashboard">Dashboard</a>
+      <a href="#" id="nav-logout" onclick="logout()">Logout</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>Running on <span>Kubernetes</span></h1>
+    <p>A fully containerised web app with a Node.js backend, MySQL database,
+       and nginx frontend — all orchestrated on a bare-metal K8s cluster.</p>
+    <div>
+      <a href="login.html" class="btn btn-primary">Get Started</a>
+      <a href="#features" class="btn btn-outline">Learn More</a>
+    </div>
+  </section>
+
+  <section class="cards" id="features">
+    <div class="card">
+      <div class="icon">🐳</div>
+      <h3>Dockerised</h3>
+      <p>Every service runs in its own container, built from a custom Dockerfile and pushed to Docker Hub.</p>
+    </div>
+    <div class="card">
+      <div class="icon">☸️</div>
+      <h3>Kubernetes</h3>
+      <p>Deployments, services, persistent volumes and ingress — all managed by Kubernetes on Azure VMs.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔐</div>
+      <h3>Auth + Database</h3>
+      <p>Register and login with credentials stored securely in MySQL with hashed passwords.</p>
+    </div>
+  </section>
+
+  <footer>Built with ☸️ Kubernetes · 🐳 Docker · 🟩 Node.js · 🐬 MySQL</footer>
+
+  <script>
+    // show/hide nav links based on login state
+    const token = localStorage.getItem('token');
+    if (token) {
+      document.getElementById('nav-login').style.display      = 'none';
+      document.getElementById('nav-dashboard').style.display  = 'inline';
+      document.getElementById('nav-logout').style.display     = 'inline';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>

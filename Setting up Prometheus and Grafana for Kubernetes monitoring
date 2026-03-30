@@ -1,0 +1,16 @@
+# Add Prometheus community Helm repository
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+# Create monitoring namespace
+kubectl create namespace monitoring
+
+# Install kube-prometheus-stack (includes Prometheus, Grafana, node-exporter, kube-state-metrics)
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  -n monitoring \
+  --set prometheus.prometheusSpec.retention=30d \
+  --set grafana.adminPassword=admin123
+
+# Verify installation
+kubectl get pods -n monitoring
